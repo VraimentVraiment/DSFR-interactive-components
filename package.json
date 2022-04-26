@@ -2,9 +2,10 @@
   "name": "dsfr-interactive-component",
   "version": "1.0.0",
   "description": "Your Figma Plugin",
-  "main": "code.js",
+  "main": "index.js",
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch"
   },
   "author": "",
   "license": "",
