@@ -11,20 +11,33 @@ function getComponents() {
 }
 function loopThroughComponents(components) {
     for (let i = 0; i < components.length; i++) {
-        console.log(components[i].variantGroupProperties["État"]); // XX
-        loopThroughVariants(components[i].children);
+        const properties = components[i].variantGroupProperties["État"].values;
+        const completeState = getCompleteState(properties);
+        const variants = components[i].children;
+        loopThroughVariants(variants, completeState);
     }
 }
-function loopThroughVariants(variants) {
+function getCompleteState(properties) {
+    const possibleTriggers = [
+        { type: "ON_HOVER", source: "Défaut", target: "Survol" },
+        { type: "ON_CLICK", source: "Focus", target: "Cliqué" },
+        { type: "ON_PRESS", source: "Survol", target: "Focus" },
+    ];
+    const triggers = possibleTriggers.filter(({ source, target }) => {
+        return properties.includes(source) && properties.includes(target);
+    });
+    return { properties, triggers };
+}
+function loopThroughVariants(variants, completeState) {
     const hashTable = createHashTable();
     count += variants.length;
     for (let j = 0; j < variants.length; j++) {
         if (!variants[j].variantProperties["État"])
             continue;
         const hashedVariants = hashTable.addVariant(variants[j]);
-        if (!hashedVariants["Défaut"] || !hashedVariants["Survol"])
+        if (!isVariantComplete(hashedVariants, completeState))
             continue;
-        addReaction(hashedVariants);
+        addReaction(hashedVariants, completeState);
     }
 }
 function createHashTable() {
@@ -51,17 +64,23 @@ function getHashKey(variantProperties) {
         .map(key => variantProperties[key])
         .join();
 }
-function addReaction(variants) {
-    variants["Défaut"].reactions = [{
-            trigger: {
-                type: "ON_HOVER",
-            },
-            action: {
-                type: "NODE",
-                navigation: "CHANGE_TO",
-                destinationId: variants["Survol"].id,
-                transition: null,
-                preserveScrollPosition: false,
+function isVariantComplete(variants, completeState) {
+    const variantKeys = Object.keys(variants);
+    return completeState.properties
+        .every(property => variantKeys.includes(property));
+}
+function addReaction(variants, completeState) {
+    completeState.triggers.forEach(({ type, source, target }) => {
+        variants[source].reactions = [{
+                trigger: { type },
+                action: {
+                    type: "NODE",
+                    navigation: "CHANGE_TO",
+                    destinationId: variants[target].id,
+                    transition: null,
+                    preserveScrollPosition: false,
+                }
             }
-        }];
+        ];
+    });
 }

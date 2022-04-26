@@ -6,6 +6,9 @@ type Hash = string;
 
 type HashedVariants = { [key: Hash]: Variant };
 
+type StateTrigger = { type: string, source: string, target: string };
+
+type CompleteState = { properties: string[], triggers: StateTrigger[] };
 
 
 figma.skipInvisibleInstanceChildren = true;
@@ -17,7 +20,6 @@ const components = getComponents();
 loopThroughComponents(components);
 
 figma.closePlugin();
-
 
 
 function getComponents(): ComponentSetNode[] {
@@ -36,13 +38,35 @@ function loopThroughComponents(components: ComponentSetNode[]): void {
 
   for (let i = 0; i < components.length; i++) {
 
-    console.log(components[i].variantGroupProperties["État"]); // XX
+    const properties = components[i].variantGroupProperties["État"].values;
 
-    loopThroughVariants(<Variant[]>components[i].children);
+    const completeState = getCompleteState(properties);
+
+    const variants = <Variant[]>components[i].children;
+
+    loopThroughVariants(variants, completeState);
   }
 }
 
-function loopThroughVariants(variants: Variant[]): void {
+
+function getCompleteState(properties: string[]): CompleteState {
+
+  const possibleTriggers: StateTrigger[] = [
+    { type: "ON_HOVER", source: "Défaut", target: "Survol" },
+    { type: "ON_CLICK", source: "Focus", target: "Cliqué" },
+    { type: "ON_PRESS", source: "Survol", target: "Focus" },
+  ];
+
+  const triggers = possibleTriggers.filter(({ source, target }) => {
+
+    return properties.includes(source) && properties.includes(target)
+  });
+
+  return { properties, triggers };
+}
+
+
+function loopThroughVariants(variants: Variant[], completeState: CompleteState): void {
 
   const hashTable = createHashTable();
 
@@ -54,9 +78,9 @@ function loopThroughVariants(variants: Variant[]): void {
 
     const hashedVariants = hashTable.addVariant(variants[j]);
 
-    if (!hashedVariants["Défaut"] || !hashedVariants["Survol"]) continue;
+    if (!isVariantComplete(hashedVariants, completeState)) continue;
 
-    addReaction(hashedVariants);
+    addReaction(hashedVariants, completeState);
   }
 }
 
@@ -97,20 +121,28 @@ function getHashKey(variantProperties: VariantProperties): Hash {
     .join();
 }
 
-function addReaction(variants: HashedVariants): void {
+function isVariantComplete(variants: HashedVariants, completeState: CompleteState): boolean {
 
-  variants["Défaut"].reactions = [{
+  const variantKeys = Object.keys(variants);
 
-    trigger: {
-      type: "ON_HOVER",
-    },
+  return completeState.properties
+    .every(property => variantKeys.includes(property));
+}
 
-    action: {
-      type: "NODE",
-      navigation: "CHANGE_TO",
-      destinationId: variants["Survol"].id,
-      transition: null,
-      preserveScrollPosition: false,
+function addReaction(variants: HashedVariants, completeState: CompleteState): void {
+  
+  completeState.triggers.forEach(({ type, source, target }) => {
+    
+    variants[source].reactions = [{
+      trigger: <Trigger>{ type },
+      action: {
+        type: "NODE",
+        navigation: "CHANGE_TO",
+        destinationId: variants[target].id,
+        transition: null,
+        preserveScrollPosition: false,
+      }
     }
-  }];
+    ]
+  });
 }
