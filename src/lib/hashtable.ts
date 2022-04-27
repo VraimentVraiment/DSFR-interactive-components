@@ -1,4 +1,6 @@
-export default class VariantsHashTable extends Map implements VariantsHashTableInterface {
+export default class VariantsHashTable
+    extends Map
+    implements VariantsHashTableInterface<Hash, HashedVariants> {
 
 
     watchKey: StateKey;
@@ -27,7 +29,7 @@ export default class VariantsHashTable extends Map implements VariantsHashTableI
 
         return variants;
     }
-    
+
 
     getHashKey(variant: Variant): Hash {
 

@@ -16,11 +16,18 @@ type HashedVariants = {
     [key in StateValue]: Variant;
 };
 
-interface VariantsHashTableInterface {
+interface VariantsHashTableInterface<Hash, HashedVariants> extends Map<Hash, HashedVariants> {
+
+    get(key: Hash): HashedVariants | undefined;
+
+    has(key: Hash): boolean;
+    
+    set(key: Hash, value: HashedVariants): this;
 
     watchKey: StateKey;
 
     addVariant(variant: Variant): HashedVariants;
 
     getHashKey(variant: Variant): Hash;
+ 
 }
