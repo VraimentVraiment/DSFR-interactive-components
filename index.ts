@@ -10,12 +10,12 @@ type StateTrigger = { type: string, source: string, target: string };
 
 type CompleteState = { properties: string[], triggers: StateTrigger[] };
 
-
 figma.skipInvisibleInstanceChildren = true;
 
 let count = 0;
 
 const components = getComponents();
+
 
 loopThroughComponents(components);
 
