@@ -1,30 +1,18 @@
 export default function selectComponents(): ComponentSetNode[] {
 
-  let selection = figma.currentPage.selection;
+	const selection = figma.currentPage.selection;
 
-  return selection.length ?
+	if (selection.length) {
 
-    getComponentSets.inSelection(selection) :
-    getComponentSets.inPage();
-}
+		return selection.filter(({ type }) => {
 
+			return type === "COMPONENT_SET";
 
-const getComponentSets = {
+		}) as ComponentSetNode[];
 
-  inSelection(selection: readonly SceneNode[]): ComponentSetNode[] {
+	} else {
 
-    return selection.filter(({ type }) => {
-
-      return type === "COMPONENT_SET";
-
-    }) as ComponentSetNode[];
-  },
-
-
-  inPage(): ComponentSetNode[] {
-
-    return figma.currentPage
-      .findAllWithCriteria({ types: ['COMPONENT_SET'] });
-  }
-  
+		return figma.currentPage
+			.findAllWithCriteria({ types: ['COMPONENT_SET'] });
+	}
 }

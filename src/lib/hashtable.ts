@@ -1,43 +1,39 @@
 export default class VariantsHashTable
-    extends Map
-    implements VariantsHashTableInterface<Hash, HashedVariants> {
+	extends Map
+	implements VariantsHashTableInterface<hash, HashedVariants> {
 
+	watchKey: stateKey;
 
-    watchKey: StateKey;
+	constructor(watchKey: stateKey) {
 
+		super();
 
-    constructor(watchKey: StateKey) {
+		this.watchKey = watchKey;
+	}
 
-        super();
+	addVariant(variant: Variant): HashedVariants {
 
-        this.watchKey = watchKey;
-    }
+		const key: hash = this.gethashKey(variant);
 
+		if (!this.has(key)) {
 
-    addVariant(variant: Variant): HashedVariants {
+			this.set(key, {});
+		}
 
-        const key: Hash = this.getHashKey(variant);
+		const variants: HashedVariants = this.get(key);
 
-        if (!this.has(key)) {
+		variants[variant.variantProperties[this.watchKey]] = variant;
 
-            this.set(key, {});
-        }
+		return variants;
+	}
 
-        const variants: HashedVariants = this.get(key);
+	gethashKey(variant: Variant): hash {
 
-        variants[variant.variantProperties[this.watchKey]] = variant;
-
-        return variants;
-    }
-
-
-    getHashKey(variant: Variant): Hash {
-
-        return Object
-            .keys(variant.variantProperties)
-            .filter(key => key !== this.watchKey)
-            .sort()
-            .map(key => variant.variantProperties[key])
-            .join();
-    }
+		return Object
+			.keys(variant.variantProperties)
+			.filter(key => key !== this.watchKey)
+			.sort()
+			.map(key => variant.variantProperties[key])
+			.join();
+	}
 }

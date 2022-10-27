@@ -1,43 +1,43 @@
 import { getComponentTriggers, everyTriggerMatch, addReactions } from "./states";
+
 import VariantsHashTable from "./hashtable";
 
 let count = 0;
 
-
 export default function loopThroughComponents(components: ComponentSetNode[]): void {
 
-    for (let i = 0; i < components.length; i++) {
+	for (let i = 0; i < components.length; i++) {
 
-        const componentStates = components[i]
-            .variantGroupProperties["État"]
-            .values as StateValue[];
+		const componentStates = components[i]
+			.variantGroupProperties["État"]?.values as stateValue[];
 
-        const variants = components[i]
-            .children as Variant[];
+		if (!componentStates) continue;
 
-        const triggers = getComponentTriggers(componentStates);
+		const variants = components[i]
+			.children as Variant[];
 
-        loopThroughVariants(variants, triggers);
-    }
+		const triggers = getComponentTriggers(componentStates);
+
+		loopThroughVariants(variants, triggers);
+	}
 }
 
+function loopThroughVariants(variants: Variant[], triggers: stateTrigger[]): void {
 
-function loopThroughVariants(variants: Variant[], triggers: StateTrigger[]): void {
+	const hashTable = new VariantsHashTable("État");
 
-    const hashTable = new VariantsHashTable("État");
+	count += variants.length;
 
-    count += variants.length;
+	for (let j = 0; j < variants.length; j++) {
 
-    for (let j = 0; j < variants.length; j++) {
+		if (!variants[j].variantProperties["État"]) continue
 
-        if (!variants[j].variantProperties["État"]) continue
+		const HashedVariants = hashTable.addVariant(variants[j]);
 
-        const hashedVariants = hashTable.addVariant(variants[j]);
+		const HashedVariantsStates = Object.keys(HashedVariants) as stateValue[];
 
-        const hashedVariantsStates = Object.keys(hashedVariants) as StateValue[];
+		if (!everyTriggerMatch(HashedVariantsStates, triggers)) continue;
 
-        if (!everyTriggerMatch(hashedVariantsStates, triggers)) continue;
-
-        addReactions(hashedVariants, triggers);
-    }
+		addReactions(HashedVariants, triggers);
+	}
 }

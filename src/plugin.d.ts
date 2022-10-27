@@ -1,33 +1,32 @@
-type StateKey = "État";
+type stateKey = "État";
 
-type StateValue = "Défaut" | "Survol" | "Focus" | "Cliqué" | "Désactivé";
+type stateValue = "Défaut" | "Survol" | "Focus" | "Cliqué" | "Désactivé";
 
-type StateTrigger = {
-    type: "ON_HOVER" | "ON_CLICK" | "ON_PRESS",
-    source: StateValue,
-    target: StateValue
+type stateTrigger = {
+	type: "ON_HOVER" | "ON_CLICK" | "ON_PRESS",
+	source: stateValue,
+	target: stateValue
 };
 
 type Variant = ComponentNode;
 
-type Hash = string;
+type hash = string;
 
 type HashedVariants = {
-    [key in StateValue]: Variant;
+	[key in stateValue]: Variant;
 };
 
-interface VariantsHashTableInterface<Hash, HashedVariants> extends Map<Hash, HashedVariants> {
+interface VariantsHashTableInterface<hash, HashedVariants> extends Map<hash, HashedVariants> {
 
-    get(key: Hash): HashedVariants | undefined;
+	get(key: hash): HashedVariants | undefined;
 
-    has(key: Hash): boolean;
-    
-    set(key: Hash, value: HashedVariants): this;
+	has(key: hash): boolean;
 
-    watchKey: StateKey;
+	set(key: hash, value: HashedVariants): this;
 
-    addVariant(variant: Variant): HashedVariants;
+	watchKey: stateKey;
 
-    getHashKey(variant: Variant): Hash;
- 
+	addVariant(variant: Variant): HashedVariants;
+
+	gethashKey(variant: Variant): hash;
 }
